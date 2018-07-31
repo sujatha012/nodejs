@@ -2,9 +2,7 @@ var mysql = require("mysql");
 var inquirer = require("inquirer");
 var cTable = require('console.table');
 
-var program = require('commander');
 
-var products = [];
 
 
 var connection = mysql.createConnection({
@@ -133,6 +131,7 @@ function addInventory() {
             });
 
         });
+        if(res.length > 0 ) {
         inquirer
             .prompt(questions)
             .then(function (answer) {
@@ -151,7 +150,9 @@ function addInventory() {
 
                 goMainMenu();
             });   //     console.log(questions);
-
+        }
+        else
+        goMainMenu();
 
     });
 }
@@ -209,4 +210,3 @@ function addProduct(){
         });
 
 }
-
