@@ -57,7 +57,7 @@ function start() {
 
             // when finished prompting, insert a new item into the db with that info
             connection.query(
-                "Select Stock_quantity, Price from products where ?", [
+                "Select Stock_quantity, Price, product_sales from products where ?", [
                     {
                         Item_id: answer.product_Id
                     }
@@ -69,22 +69,26 @@ function start() {
                         afterConnection();
                     }
                     else {
-                        addToCart(answer.product_Id, answer.product_Qty, res[0].Stock_quantity, res[0].Price);
+                        addToCart(answer.product_Id, answer.product_Qty, res[0].Stock_quantity,res[0].product_sales, res[0].Price);
                     }
                 })
             ;
         });
 }
 
-function update(product_Id, product_Qty, Stock_quantity) {
+function update(product_Id, product_Qty, Stock_quantity, product_sales) {
 
     Stock_quantity = Stock_quantity - product_Qty;
 
     connection.query(
-        "Update  products Set ? where ?", [
+        "Update  products Set ?,? where ?", [
             {
                 Stock_quantity: Stock_quantity
             },
+            {
+                product_sales: product_sales
+            },
+
             {
                 Item_id: product_Id
             }
@@ -96,12 +100,13 @@ function update(product_Id, product_Qty, Stock_quantity) {
     ;
 }
 
-function addToCart(product_Id, product_Qty, Stock_quantity, Price) {
+function addToCart(product_Id, product_Qty, Stock_quantity, product_sales, Price) {
 
     var prd = {
         id:product_Id,
         qty:product_Qty,
         stkQty:Stock_quantity,
+        product_sales: product_sales + (Price * product_Qty),
         price:Price,
         totalPrice: (Price * product_Qty)
     };
@@ -128,7 +133,7 @@ function addToCart(product_Id, product_Qty, Stock_quantity, Price) {
                 products.forEach(function(prd) {
 
                     totalPrice = totalPrice + prd.totalPrice;
-                    update(prd.id, prd.qty, prd.stkQty);
+                    update(prd.id, prd.qty, prd.stkQty, prd.totalPrice, prd.product_sales);
 
                 });
                 console.log(cTable.getTable("Order Details ", products));
